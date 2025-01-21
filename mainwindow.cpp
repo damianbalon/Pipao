@@ -5,7 +5,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
-    // Konfiguracja bazy danych
+
     db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(QCoreApplication::applicationDirPath() + "/finances.db");
 
@@ -16,7 +16,6 @@ MainWindow::MainWindow(QWidget *parent)
         ensureDatabaseTables();
     }
 
-    // Wypełnij listy rozwijane
     ui->incomeCategoryComboBox->addItems({"Salary", "Bonus", "Interest"});
     ui->expenseCategoryComboBox->addItems({"Shopping", "Bills", "Transport"});
     check_sum();
@@ -52,14 +51,23 @@ void MainWindow::ensureDatabaseTables() {
 
 void MainWindow::on_addIncomeButton_clicked() {
     QString category = getSelectedIncomeCategory();
+    QString amountText = ui->lineEdit->text();
+
+    bool ok;
+    double amount = amountText.toDouble(&ok);
+    if (!ok) {
+        QMessageBox::warning(this, "Invalid Input", "Please enter a valid number for income amount.");
+        return;
+    }
+
     Income *income = nullptr;
 
     if (category == "Salary") {
-        income = new Salary(ui->dateEdit->date(), ui->lineEdit->text().toDouble());
+        income = new Salary(ui->dateEdit->date(), amount);
     } else if (category == "Bonus") {
-        income = new Bonus(ui->dateEdit->date(), ui->lineEdit->text().toDouble());
+        income = new Bonus(ui->dateEdit->date(), amount);
     } else if (category == "Interest") {
-        income = new Interest(ui->dateEdit->date(), ui->lineEdit->text().toDouble());
+        income = new Interest(ui->dateEdit->date(), amount);
     }
 
     if (income) {
@@ -84,14 +92,23 @@ void MainWindow::on_addIncomeButton_clicked() {
 
 void MainWindow::on_addExpenseButton_clicked() {
     QString category = getSelectedExpenseCategory();
+    QString amountText = ui->lineEdit_2->text();
+
+    bool ok;
+    double amount = amountText.toDouble(&ok);
+    if (!ok) {
+        QMessageBox::warning(this, "Invalid Input", "Please enter a valid number for expense amount.");
+        return;
+    }
+
     Expense *expense = nullptr;
 
     if (category == "Shopping") {
-        expense = new Shopping(ui->dateEdit_2->date(), ui->lineEdit_2->text().toDouble());
+        expense = new Shopping(ui->dateEdit_2->date(), amount);
     } else if (category == "Bills") {
-        expense = new Bills(ui->dateEdit_2->date(), ui->lineEdit_2->text().toDouble());
+        expense = new Bills(ui->dateEdit_2->date(), amount);
     } else if (category == "Transport") {
-        expense = new Transport(ui->dateEdit_2->date(), ui->lineEdit_2->text().toDouble());
+        expense = new Transport(ui->dateEdit_2->date(), amount);
     }
 
     if (expense) {
@@ -113,6 +130,7 @@ void MainWindow::on_addExpenseButton_clicked() {
 
     check_sum();
 }
+
 
 void MainWindow::on_graph_clicked() {
     this->hide();
